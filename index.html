@@ -132,64 +132,41 @@
       <div class="logo-removed">الشعار الأصلي لـ Cool kids محذوف — موضعه موضح أعلاه.</div>
     </div>
   </div>
+<audio id="bgAudio" autoplay muted loop>
+  <source src="Almond_CruiseMP3_320K.mp3" type="audio/mpeg">
+</audio>
 
-  <script>
-    (function(){
-      const slides = Array.from(document.querySelectorAll('.slide'));
-      const prev = document.getElementById('prevBtn');
-      const next = document.getElementById('nextBtn');
-      let current = 0;
+<script>
+const audio = document.getElementById('bgAudio');
 
-      function update() {
-        slides.forEach((s,i)=>{
-          s.style.transform = `translateX(${(i-current)*100}%)`;
-        });
-      }
-      update();
+// إزالة الكتم بعد أول تفاعل للمستخدم (النقرة الأولى)
+document.addEventListener('click', ()=> {
+  if(audio.muted){
+    audio.muted = false;
+    audio.play().catch(()=>{});
+  }
+},{once:true});
 
-      prev.addEventListener('click',()=>{ current = (current-1+slides.length)%slides.length; update(); checkMusicPause(); });
-      next.addEventListener('click',()=>{ current = (current+1)%slides.length; update(); checkMusicPause(); });
+// زر الموسيقى لا يزال متاح للتشغيل/الإيقاف اليدوي
+const musicBtn = document.getElementById('musicBtn');
+const musicState = document.getElementById('musicState');
 
-      document.addEventListener('keydown', (e)=>{
-        if(e.key === 'ArrowLeft') prev.click();
-        if(e.key === 'ArrowRight') next.click();
-      });
+function setPlaying(playing){
+  musicBtn.setAttribute('aria-pressed', String(playing));
+  musicBtn.textContent = playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى';
+  musicState.textContent = playing ? 'الموسيقى قيد التشغيل' : 'موسيقى متوقفة';
+}
 
-      const musicBtn = document.getElementById('musicBtn');
-      const musicState = document.getElementById('musicState');
-      const audio = document.getElementById('bgAudio');
+musicBtn.addEventListener('click', ()=>{
+  if(audio.paused){
+    audio.play().then(()=> setPlaying(true)).catch(()=>{});
+  } else {
+    audio.pause();
+    setPlaying(false);
+  }
+});
 
-      function setPlaying(playing){
-        musicBtn.setAttribute('aria-pressed', String(playing));
-        musicBtn.textContent = playing ? 'إيقاف الموسيقى' : 'تشغيل الموسيقى';
-        musicState.textContent = playing ? 'الموسيقى قيد التشغيل' : 'موسيقى متوقفة';
-      }
-
-      musicBtn.addEventListener('click', ()=>{
-        if(!audio.src || audio.src.includes('Almond_CruiseMP3_320K.mp3')){
-          alert('رجاءً استبدل قيمة src في وسم <audio> برابط ملف الموسيقى المطلوب.');
-          return;
-        }
-        if(audio.paused){
-          audio.play().then(()=> setPlaying(true)).catch(()=>{
-            alert('المتصفح منع التشغيل — اضغط مرة أخرى للسماح بالتشغيل.');
-          });
-        } else {
-          audio.pause();
-          setPlaying(false);
-        }
-      });
-
-      const musicSlideIndex = slides.findIndex(s => s.querySelector('.music-slot'));
-      function checkMusicPause(){
-        if(current !== musicSlideIndex && !audio.paused){
-          audio.pause();
-          setPlaying(false);
-        }
-      }
-
-      audio.addEventListener('ended', ()=> setPlaying(false));
-    })();
-  </script>
+audio.addEventListener('ended', ()=> setPlaying(false));
+</script>
 </body>
 </html>
